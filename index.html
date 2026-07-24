@@ -1080,6 +1080,11 @@ function hitungBetting(event) {
     // --- Coba parsing sebagai slip multi-leg (parlay) terlebih dahulu ---
     let legs = parseBetSlip(details);
 
+    // Default: pakai odds yang diinput di form. Untuk parlay/mix parlay akan
+    // ditimpa di bawah dengan odds gabungan EFEKTIF (memperhitungkan garis
+    // quarter half-win), supaya Total Kemenangan tidak overpay.
+    let effectiveOddsForPayout = odds;
+
     if (legs.length > 0) {
         let isSingle = legs.length === 1;
 
@@ -1128,8 +1133,21 @@ function hitungBetting(event) {
             factor = anyFullLose || legs.some(function(l) { return l.factor === -0.5; }) ? -1 : 1;
         }
 
+        // Odds efektif tiap leg untuk taruhan gabungan (parlay/mix parlay):
+        // - Leg PUSH (factor 0, mis. garis penuh yang seri) TIDAK mempengaruhi
+        //   odds gabungan sama sekali (diperlakukan seolah odds = 1).
+        // - Leg MENANG SETENGAH (factor 0.5, garis QUARTER seperti -0.25/-0.75
+        //   atau 2.25/2.75 dimana setengah stake push) HANYA berkontribusi
+        //   odds efektif = 1 + (odds-1)/2, PERSIS seperti perhitungan single
+        //   bet untuk garis quarter (lihat calcPayout factor 0.5). Situs
+        //   taruhan sering menampilkan odds gabungan mentah (hasil kali odds
+        //   penuh apa adanya), padahal seharusnya leg quarter half-win itu
+        //   memotong odds efektifnya, BUKAN dihitung sebagai menang penuh.
+        // - Leg MENANG PENUH (factor 1) berkontribusi odds penuh apa adanya.
         let computedCombinedOdds = legs.reduce(function(acc, l) {
-            return l.factor === 0 ? acc : acc * l.betInfo.odds;
+            if (l.factor === 0) return acc;
+            if (l.factor === 0.5) return acc * (1 + (l.betInfo.odds - 1) / 2);
+            return acc * l.betInfo.odds;
         }, 1);
 
         if (isSingle) {
@@ -1142,12 +1160,19 @@ function hitungBetting(event) {
             explanationText += "\nStatus: " + statusLabel(factor) + "\n\n";
         } else {
             explanationText += "Karena ini taruhan gabungan (parlay/mix parlay), SEMUA leg harus MENANG (penuh atau setengah) agar keseluruhan taruhan menang.\n";
-            explanationText += "Odds gabungan hasil kali tiap leg (cross-check) = " + formatNumber(computedCombinedOdds) + "\n";
-            explanationText += "Odds yang Anda masukkan di form           = " + formatNumber(odds) + "\n";
-            if (Math.abs(computedCombinedOdds - odds) > Math.max(0.01, computedCombinedOdds * 0.02)) {
-                explanationText += "Catatan: ada selisih antara odds gabungan hasil parsing dan odds yang Anda masukkan, mohon cek ulang.\n";
+            let anyHalfWinLeg = legs.some(function(l) { return l.factor === 0.5; });
+            explanationText += "Odds gabungan EFEKTIF (dipakai untuk hitung Total Kemenangan) = " + formatNumber(computedCombinedOdds) + "\n";
+            if (anyHalfWinLeg) {
+                explanationText += "Catatan: ada leg MENANG SETENGAH (garis quarter), jadi odds efektif leg tsb dikurangi menjadi 1 + (odds-1)/2, bukan odds penuh.\n";
             }
+            explanationText += "Odds gabungan mentah (hasil kali odds penuh apa adanya, seperti biasa ditampilkan situs taruhan) = " + formatNumber(legs.reduce(function(acc, l) { return l.factor === 0 ? acc : acc * l.betInfo.odds; }, 1)) + "\n";
+            explanationText += "Odds yang Anda masukkan di form           = " + formatNumber(odds) + "\n";
             explanationText += "\nStatus keseluruhan: " + statusLabel(factor) + "\n\n";
+            // Timpa odds yang dipakai untuk hitung Total Kemenangan dengan odds
+            // gabungan EFEKTIF (bukan odds mentah form), supaya leg quarter
+            // half-win benar-benar mengurangi payout, bukan malah dianggap
+            // menang penuh.
+            effectiveOddsForPayout = computedCombinedOdds;
         }
 
     } else {
@@ -1165,7 +1190,14 @@ function hitungBetting(event) {
     // leg pertama, karena biasanya ini adalah setelan akun/bandar yang sama untuk
     // seluruh taruhan, bukan per-leg.
     let overallOddsType = legs.length > 0 ? legs[0].oddsType : null;
-    let payout = calcPayout(stake, odds, payoutFactor, overallOddsType);
+    // Untuk taruhan gabungan (parlay/mix parlay), Total Kemenangan HARUS dihitung
+    // memakai odds gabungan EFEKTIF (effectiveOddsForPayout) yang sudah memperhitungkan
+    // pengurangan odds pada leg MENANG SETENGAH (garis quarter) — BUKAN memakai odds
+    // mentah yang diinput di form / ditampilkan situs taruhan, karena odds mentah itu
+    // mengasumsikan semua leg menang PENUH sehingga hasilnya kelebihan bayar (overpay).
+    // Untuk taruhan SINGLE, odds form sudah = odds pertandingan itu sendiri jadi tetap dipakai.
+    let oddsForPayout = effectiveOddsForPayout;
+    let payout = calcPayout(stake, oddsForPayout, payoutFactor, overallOddsType);
     explanationText += payout.explanationText;
 
     // Menampilkan hasil ke dalam tabel & kotak penjelasan
