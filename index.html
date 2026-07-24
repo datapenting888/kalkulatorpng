@@ -898,21 +898,27 @@ function parseLeg(block) {
     }
 
     // --------------------------------------------------------
-    // PENYESUAIAN LIVE SCORE (khusus Handicap & Over/Under):
+    // PENYESUAIAN LIVE SCORE (KHUSUS Handicap saja, BUKAN Over/Under):
     // "Live Score" adalah skor pertandingan PADA SAAT taruhan
-    // ditempatkan (taruhan live/in-play). Garis (line) yang
-    // diberikan bandar sudah dikalibrasi terhadap skor live
-    // tersebut, sehingga yang dinilai untuk menentukan menang/
-    // kalah adalah SELISIH gol SEJAK saat itu (skor periode -
-    // Live Score), BUKAN skor mentah dari 0-0. Untuk taruhan
-    // pre-match biasa, Live Score selalu 0-0 sehingga ini TIDAK
-    // mengubah hasil apa pun (aman, tidak ada regresi).
+    // ditempatkan (taruhan live/in-play). Untuk Handicap, garis
+    // (line) yang diberikan bandar sudah dikalibrasi terhadap skor
+    // live tersebut, sehingga yang dinilai untuk menentukan menang/
+    // kalah adalah SELISIH gol SEJAK saat itu (skor periode - Live
+    // Score), BUKAN skor mentah dari 0-0.
+    // Untuk Over/Under, total gol yang dinilai TETAP selalu memakai
+    // hasil akhir/Full Time (atau HT/2H sesuai babak) APA ADANYA —
+    // TIDAK dikurangi Live Score, walau taruhan ditempatkan saat live.
+    // Untuk taruhan pre-match biasa, Live Score selalu 0-0 sehingga
+    // penyesuaian ini TIDAK mengubah hasil apa pun (aman, tidak ada
+    // regresi).
     // --------------------------------------------------------
     let liveNote = null;
-    if (!periodUnknown && (betInfo.market === 'handicap' || betInfo.market === 'ou') && (liveHomeGoals !== 0 || liveAwayGoals !== 0)) {
+    if (!periodUnknown && betInfo.market === 'handicap' && (liveHomeGoals !== 0 || liveAwayGoals !== 0)) {
         let beforeHome = periodGoals.home, beforeAway = periodGoals.away;
         periodGoals = { home: periodGoals.home - liveHomeGoals, away: periodGoals.away - liveAwayGoals };
         liveNote = "Taruhan ini ditempatkan saat pertandingan LIVE pada skor " + liveHomeGoals + "-" + liveAwayGoals + ". Garis pasaran sudah dikalibrasi pada skor live tsb, sehingga yang dinilai adalah selisih gol SEJAK saat itu: (" + beforeHome + "-" + beforeAway + ") - Live Score (" + liveHomeGoals + "-" + liveAwayGoals + ") = " + periodGoals.home + "-" + periodGoals.away + ".";
+    } else if (!periodUnknown && betInfo.market === 'ou' && (liveHomeGoals !== 0 || liveAwayGoals !== 0)) {
+        liveNote = "Taruhan ini ditempatkan saat pertandingan LIVE pada skor " + liveHomeGoals + "-" + liveAwayGoals + ". Untuk Over/Under, total gol yang dinilai tetap memakai hasil akhir (" + periodGoals.home + "-" + periodGoals.away + ") apa adanya, TIDAK dikurangi Live Score.";
     }
 
     let resultInfo;
