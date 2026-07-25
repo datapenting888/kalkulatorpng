@@ -627,7 +627,7 @@ function asianHandicapFactor(line, teamGoals, oppGoals) {
 function asianHandicapReasoning(line, teamGoals, oppGoals, teamLabel, oppLabel) {
     function evalHalf(l) {
         let diff = (teamGoals - oppGoals) + l;
-        let hasil = diff > 0 ? 'dinyatakan MENANG' : (diff === 0 ? 'dinyatakan PUSH (seri, stake dikembalikan)' : 'dinyatakan KALAH');
+        let hasil = diff > 0 ? 'dinyatakan MENANG' : (diff === 0 ? 'dinyatakan SERI / DRAW (stake dikembalikan)' : 'dinyatakan KALAH');
         let tanda = l >= 0 ? '+' : '';
         return {
             factor: diff > 0 ? 1 : (diff === 0 ? 0 : -1),
@@ -675,7 +675,7 @@ function overUnderReasoning(line, total, selection) {
         let isOver = selection === 'over';
         let f = isOver ? (total > l ? 1 : (total === l ? 0 : -1))
                        : (total < l ? 1 : (total === l ? 0 : -1));
-        let hasil = f === 1 ? 'dinyatakan MENANG' : (f === 0 ? 'dinyatakan PUSH (seri, stake dikembalikan)' : 'dinyatakan KALAH');
+        let hasil = f === 1 ? 'dinyatakan MENANG' : (f === 0 ? 'dinyatakan SERI / DRAW (stake dikembalikan)' : 'dinyatakan KALAH');
         return {
             factor: f,
             text: "      Total gol pertandingan (" + total + ") dibandingkan dengan garis " + (isOver ? 'Over ' : 'Under ') + formatNumber(l) + ", sehingga bagian taruhan ini " + hasil + "."
@@ -711,7 +711,7 @@ function overUnderReasoning(line, total, selection) {
 function statusLabelForFactorText(factor) {
     if (factor === 1) return 'MENANG PENUH';
     if (factor === 0.5) return 'MENANG SETENGAH (Half Win)';
-    if (factor === 0) return 'PUSH (seri, stake dikembalikan)';
+    if (factor === 0) return 'SERI / DRAW (stake dikembalikan)';
     if (factor === -0.5) return 'KALAH SETENGAH (Half Lose)';
     return 'KALAH PENUH';
 }
@@ -754,7 +754,7 @@ function determineLegResult(betInfo, homeGoals, awayGoals) {
     }
     if (market === 'dnb') {
         if (homeGoals === awayGoals) {
-            return { result: 'push', factor: 0, reasoning: "Draw No Bet. Skor akhir seri (" + homeGoals + "-" + awayGoals + ") -> PUSH, seluruh Stake dikembalikan." };
+            return { result: 'push', factor: 0, reasoning: "Draw No Bet. Skor akhir seri (" + homeGoals + "-" + awayGoals + ") -> SERI / DRAW, seluruh Stake dikembalikan." };
         }
         if (!betInfo.side) return { result: 'unknown', factor: null, reasoning: null };
         let teamLabel = betInfo.side === 'home' ? betInfo.teamHome : betInfo.teamAway;
@@ -1017,7 +1017,7 @@ function calcPayout(stake, odds, factor, oddsType) {
             "Keuntungan yang diperoleh = Stake x 0.5 x Keuntungan per unit = " + formatNumber(winLose) + ".\n" +
             "Total Kemenangan yang diterima = Stake + Keuntungan = " + formatNumber(totalKemenangan) + ".";
     } else if (factor === 0) {
-        explanationText += "Status taruhan: PUSH / SERI.\n" +
+        explanationText += "Status taruhan: SERI / DRAW.\n" +
             "Seluruh nilai stake dikembalikan secara penuh kepada member, tanpa ada keuntungan maupun kerugian.\n" +
             "Total Kemenangan yang diterima = Stake yang dikembalikan = " + formatNumber(totalKemenangan) + ".";
     } else if (factor === -0.5) {
@@ -1041,7 +1041,7 @@ function calcPayout(stake, odds, factor, oddsType) {
 function statusLabel(factor) {
     if (factor === 1) return 'MENANG';
     if (factor === 0.5) return 'MENANG SETENGAH';
-    if (factor === 0) return 'PUSH / SERI';
+    if (factor === 0) return 'SERI / DRAW';
     if (factor === -0.5) return 'KALAH SETENGAH';
     if (factor === -1) return 'KALAH';
     return 'PERLU CEK MANUAL';
