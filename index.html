@@ -45,7 +45,7 @@ body {
 }
 
 .container {
-  max-width: 1100px;
+  max-width: 100%;
   margin: auto;
   background: linear-gradient(180deg, var(--surface) 0%, var(--bg-mid) 100%);
   padding: 36px 40px 44px;
@@ -63,6 +63,7 @@ body {
   height: 3px;
   background: var(--gold-gradient);
   box-shadow: 0 0 14px rgba(217,180,90,0.5);
+  border-radius: 18px 18px 0 0;
 }
 
 .container::after {
@@ -75,15 +76,6 @@ body {
   pointer-events: none;
 }
 
-.gold-wave {
-  position: absolute;
-  pointer-events: none;
-  opacity: 0.55;
-  z-index: 0;
-}
-.gold-wave.top-left { top: -18px; left: -18px; width: 260px; }
-.gold-wave.bottom-right { bottom: -18px; right: -18px; width: 260px; transform: rotate(180deg); }
-
 .container > * { position: relative; z-index: 1; }
 
 .eyebrow {
@@ -92,7 +84,7 @@ body {
   gap: 8px;
   font-family: 'JetBrains Mono', monospace;
   font-weight: 700;
-  font-size: 11px;
+  font-size: 13px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--gold-light);
@@ -113,7 +105,7 @@ body {
 h2 {
   font-family: 'Space Grotesk', sans-serif;
   font-weight: 700;
-  font-size: clamp(22px, 2.4vw, 30px);
+  font-size: clamp(24px, 2.4vw, 32px);
   background: var(--gold-gradient);
   -webkit-background-clip: text;
   background-clip: text;
@@ -138,7 +130,7 @@ h2::after {
 h3 {
   font-family: 'Space Grotesk', sans-serif;
   font-weight: 700;
-  font-size: 18px;
+  font-size: 20px;
   background: var(--gold-gradient);
   -webkit-background-clip: text;
   background-clip: text;
@@ -195,7 +187,7 @@ label {
   display: block;
   margin-bottom: 8px;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 15px;
   letter-spacing: 0.02em;
   color: var(--gold-light);
 }
@@ -209,7 +201,7 @@ input[type="number"], textarea {
   background: rgba(255,255,255,0.03);
   color: var(--text-primary);
   font-family: 'Inter', sans-serif;
-  font-size: 14px;
+  font-size: 16px;
   transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
 
@@ -233,7 +225,7 @@ button {
   border-radius: 10px;
   font-family: 'Space Grotesk', sans-serif;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 16px;
   letter-spacing: 0.01em;
   box-shadow: 0 8px 24px rgba(217,180,90,0.25);
   transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
@@ -241,22 +233,24 @@ button {
 button:hover { filter: brightness(1.08); box-shadow: 0 10px 30px rgba(217,180,90,0.35); transform: translateY(-1px); }
 button:active { transform: translateY(0); }
 
+.table-scroll {
+  margin-top: 20px;
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
 table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  margin-top: 20px;
-  overflow-x: auto;
-  display: block;
-  border-radius: 12px;
-  border: 1px solid var(--border);
 }
 
 th, td {
   border-bottom: 1px solid var(--border-soft);
   padding: 14px 16px;
   text-align: left;
-  font-size: 13px;
+  font-size: 15px;
   vertical-align: middle;
   white-space: nowrap;
 }
@@ -265,7 +259,7 @@ th {
   background: var(--surface-alt);
   color: var(--gold-light);
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: 13px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   font-weight: 700;
@@ -281,43 +275,47 @@ tbody tr:last-child td { border-bottom: none; }
 
 #result-section { display: none; margin-top: 34px; }
 
-.explanation-box { margin-top: 20px; }
+.explanation-box { margin-top: 20px; display: flex; flex-direction: column; gap: 20px; }
+.explanation-box .explanation-col { display: flex; flex-direction: column; gap: 8px; }
 .explanation-box textarea {
   background: #0d1022;
-  color: #c9cee8;
+  color: var(--text-primary);
   min-height: 260px;
   height: 260px;
   overflow: hidden;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12.5px;
+  font-size: 14.5px;
   line-height: 1.6;
   border-color: rgba(217,180,90,0.2);
+}
+.explanation-display {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1px solid rgba(217,180,90,0.2);
+  border-radius: 10px;
+  background: #0d1022;
+  color: var(--text-primary);
+  min-height: 260px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14.5px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.explanation-display:empty::before { content: attr(data-placeholder); color: var(--text-muted); }
+.explanation-display .match-header {
+  color: var(--lime);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-shadow: 0 0 10px rgba(219,245,0,0.25);
 }
 </style>
 </head>
 <body>
 
 <div class="container">
-<svg class="gold-wave top-left" viewBox="0 0 260 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M0 90 C 60 20, 120 130, 180 55 S 260 10, 260 10" stroke="url(#goldWaveGrad)" stroke-width="2.5" stroke-linecap="round"/>
-  <defs>
-    <linearGradient id="goldWaveGrad" x1="0" y1="0" x2="260" y2="0" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#f6e7a8"/>
-      <stop offset="0.5" stop-color="#d9b45a"/>
-      <stop offset="1" stop-color="#a7782c"/>
-    </linearGradient>
-  </defs>
-</svg>
-<svg class="gold-wave bottom-right" viewBox="0 0 260 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M0 90 C 60 20, 120 130, 180 55 S 260 10, 260 10" stroke="url(#goldWaveGrad2)" stroke-width="2.5" stroke-linecap="round"/>
-  <defs>
-    <linearGradient id="goldWaveGrad2" x1="0" y1="0" x2="260" y2="0" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#f6e7a8"/>
-      <stop offset="0.5" stop-color="#d9b45a"/>
-      <stop offset="1" stop-color="#a7782c"/>
-    </linearGradient>
-  </defs>
-</svg>
 <span class="eyebrow">SMB Group</span>
 <h2>KALKULATOR BOLA PNG</h2>
 
@@ -332,7 +330,7 @@ tbody tr:last-child td { border-bottom: none; }
 <div class="form-col-side">
 <div class="form-group">
 <label>Stake:</label>
-<input type="number" step="any" id="stake" required placeholder="Contoh: 100">
+<input type="number" step="any" id="stake" required placeholder="Contoh: 64000.00">
 </div>
 
 <div class="form-group">
@@ -348,6 +346,7 @@ tbody tr:last-child td { border-bottom: none; }
 <div id="result-section">
 
 <h3>Hasil Kalkulasi Dashboard:</h3>
+<div class="table-scroll">
 <table>
 <thead>
 <tr>
@@ -372,11 +371,18 @@ tbody tr:last-child td { border-bottom: none; }
 </tr>
 </tbody>
 </table>
+</div>
 
 <!-- Kotak Penjelasan -->
 <div class="form-group explanation-box">
+<div class="explanation-col">
 <label for="res-explanation">Penjelasan:</label>
-<textarea id="res-explanation" placeholder="Penjelasan kalkulasi atau catatan status akan muncul otomatis di sini..."></textarea>
+<div id="res-explanation" class="explanation-display" data-placeholder="Penjelasan kalkulasi akan muncul otomatis di sini..."></div>
+</div>
+<div class="explanation-col">
+<label for="res-conclusion">Kesimpulan:</label>
+<textarea id="res-conclusion" placeholder="Kesimpulan status taruhan akan muncul otomatis di sini..."></textarea>
+</div>
 </div>
 </div>
 
@@ -385,6 +391,27 @@ tbody tr:last-child td { border-bottom: none; }
 <script>
 function formatNumber(num) {
     return Number(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// Meng-escape karakter HTML agar teks (termasuk nama tim hasil input bebas
+// pengguna) aman ditampilkan lewat innerHTML, tidak dieksekusi sebagai markup.
+function escapeHtml(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+// Menyorot baris "Pertandingan: ..." / "Pertandingan 1: ..." (header tiap leg)
+// dengan warna & ukuran berbeda agar mudah dibedakan dari baris detail lainnya.
+function renderExplanationHtml(text) {
+    return text.split("\n").map(function(line) {
+        let escaped = escapeHtml(line);
+        if (/^Pertandingan(\s+\d+)?\s*:/.test(line)) {
+            return '<span class="match-header">' + escaped + '</span>';
+        }
+        return escaped;
+    }).join("\n");
 }
 
 // ============================================================
@@ -1258,10 +1285,22 @@ function hitungBetting(event) {
     winLoseElem.className = payout.winLose > 0 ? 'win' : (payout.winLose < 0 ? 'lose' : 'neutral');
 
     const resExplanationEl = document.getElementById('res-explanation');
-    resExplanationEl.value = explanationText;
+    const resConclusionEl = document.getElementById('res-conclusion');
+    let splitMarker = "Kesimpulan:";
+    let splitIdx = explanationText.indexOf(splitMarker);
+    let leftText, rightText;
+    if (splitIdx !== -1) {
+        leftText = explanationText.slice(0, splitIdx).trim();
+        rightText = explanationText.slice(splitIdx).trim();
+    } else {
+        leftText = explanationText.trim();
+        rightText = "";
+    }
+    resExplanationEl.innerHTML = renderExplanationHtml(leftText);
+    resConclusionEl.value = rightText;
 
     document.getElementById('result-section').style.display = 'block';
-    autoGrowTextarea(resExplanationEl, 260);
+    autoGrowTextarea(resConclusionEl, 260);
 }
 </script>
 
